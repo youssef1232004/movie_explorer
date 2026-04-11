@@ -19,15 +19,21 @@ class MovieDetailsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Image.network(
-              movie.posterPath, 
-              width: double.infinity, 
-              height: 400, 
-              fit: BoxFit.cover,
-              errorBuilder: (c, e, s) => Container(height: 400, color: Colors.grey),
+            Hero(
+              tag: 'movie_${movie.id}',
+              child: ClipRRect(
+                borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(30), bottomRight: Radius.circular(30)),
+                child: Image.network(
+                  movie.posterPath, 
+                  width: double.infinity, 
+                  height: 450, 
+                  fit: BoxFit.cover,
+                  errorBuilder: (c, e, s) => Container(height: 450, color: Colors.grey.shade300),
+                ),
+              ),
             ),
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(24.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -36,30 +42,54 @@ class MovieDetailsScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: Text(movie.title, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
+                        child: Text(movie.title, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900)),
                       ),
                       IconButton(
-                        icon: Icon(isFav ? Icons.favorite : Icons.favorite_border, color: Colors.red, size: 36),
+                        icon: Icon(isFav ? Icons.favorite : Icons.favorite_border, color: Colors.redAccent, size: 36),
                         onPressed: () => context.read<MovieProvider>().toggleFavorite(movie),
                       )
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 16),
                   Row(
                     children: [
-                      const Icon(Icons.star, color: Colors.amber, size: 20),
-                      Text(' ${movie.rating.toStringAsFixed(1)}/10', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.amber.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.star, color: Colors.amber, size: 20),
+                            const SizedBox(width: 6),
+                            Text('${movie.rating.toStringAsFixed(1)}/10', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      ),
                       const SizedBox(width: 16),
-                      const Icon(Icons.calendar_today, size: 18, color: Colors.grey),
-                      Text(' ${movie.releaseDate}', style: const TextStyle(fontSize: 16, color: Colors.grey)),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.blueAccent.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.calendar_today, size: 18, color: Colors.blueAccent),
+                            const SizedBox(width: 6),
+                            Text(movie.releaseDate, style: const TextStyle(fontSize: 16, color: Colors.blueAccent, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
-                  const SizedBox(height: 24),
-                  const Text('Overview', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 32),
+                  const Text('Overview', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 12),
                   Text(
                     movie.overview, 
-                    style: const TextStyle(fontSize: 16, height: 1.5),
+                    style: const TextStyle(fontSize: 16, height: 1.6, color: Colors.grey),
                   ),
                 ],
               ),

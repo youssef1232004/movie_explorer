@@ -37,16 +37,33 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Icon(Icons.movie_creation_rounded, size: 80, color: Colors.blue),
-            SizedBox(height: 16),
-            Text('Movie Explorer', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-            SizedBox(height: 32),
-            CircularProgressIndicator(),
-          ],
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.blueAccent, Colors.indigo],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Icon(Icons.movie_creation_rounded, size: 100, color: Colors.white),
+              SizedBox(height: 24),
+              Text(
+                'Movie Explorer',
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  letterSpacing: 1.2,
+                ),
+              ),
+              SizedBox(height: 48),
+              CircularProgressIndicator(color: Colors.white),
+            ],
+          ),
         ),
       ),
     );

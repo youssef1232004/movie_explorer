@@ -46,6 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Movies'),
+        centerTitle: false,
         actions: [
           IconButton(
             icon: const Icon(Icons.favorite),
@@ -67,13 +68,18 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(12.0),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
             child: TextField(
               decoration: InputDecoration(
-                labelText: 'Search Movies...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                hintText: 'Search Movies...',
+                prefixIcon: const Icon(Icons.search, color: Colors.blueAccent),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: BorderSide.none,
+                ),
                 filled: true,
+                fillColor: Theme.of(context).brightness == Brightness.dark ? Colors.grey[800] : Colors.grey[200],
+                contentPadding: const EdgeInsets.symmetric(vertical: 0),
               ),
               onChanged: (query) => context.read<MovieProvider>().search(query),
             ),
@@ -100,28 +106,42 @@ class _HomeScreenState extends State<HomeScreen> {
                       builder: (_) => MovieDetailsScreen(movie: movie)
                     ));
                   },
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        Image.network(movie.posterPath, fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, size: 50),
-                        ),
-                        Positioned(
-                          bottom: 0, left: 0, right: 0,
-                          child: Container(
-                            color: Colors.black87,
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(
-                              movie.title,
-                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                  child: Card(
+                    elevation: 5,
+                    shadowColor: Colors.black45,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          Hero(
+                            tag: 'movie_${movie.id}',
+                            child: Image.network(movie.posterPath, fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, size: 50),
                             ),
                           ),
-                        )
-                      ],
+                          Positioned(
+                            bottom: 0, left: 0, right: 0,
+                            child: Container(
+                              decoration: const BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [Colors.transparent, Colors.black87],
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                ),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
+                              child: Text(
+                                movie.title,
+                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
                     ),
                   ),
                 );
