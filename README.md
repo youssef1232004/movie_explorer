@@ -19,12 +19,6 @@ A beautifully crafted **Flutter** application for discovering, searching, and sa
 
 ---
 
-## 📱 Screenshots
-
-> _Add screenshots here after running the app._
-
----
-
 ## 🏗️ Architecture
 
 The app follows a clean **Provider-based** state management architecture:
