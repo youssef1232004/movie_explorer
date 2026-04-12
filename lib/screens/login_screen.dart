@@ -4,7 +4,7 @@ import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:movie_explorer/providers/theme_provider.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
-import 'home_screen.dart';
+import 'main_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -32,14 +32,12 @@ class _LoginScreenState extends State<LoginScreen> {
       if (success && mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
+          MaterialPageRoute(builder: (_) => const MainScreen()),
         );
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text(
-              'Login failed. Try username: emilys , pass: emilyspass',
-            ),
+            content: Text('Login failed. Try username: emilys , pass: emilyspass'),
           ),
         );
       }
@@ -50,121 +48,94 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final themeProvider = context.watch<ThemeProvider>();
 
+    // Simple color pick: red for dark mode, orange for light mode
+    final isDark = themeProvider.isDarkMode;
+    final Color accentColor = isDark ? const Color(0xFFE50914) : Colors.deepOrange;
+    final Color fieldFill = isDark ? Colors.grey.shade800 : Colors.grey.shade50;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Login to Explore'),
-        centerTitle: false, 
+        centerTitle: false,
         actions: [
           IconButton(
-            icon: Icon(
-              themeProvider.isDarkMode
-                  ? Icons.wb_sunny
-                  : Icons.nightlight_round,
-            ),
+            icon: Icon(isDark ? Icons.wb_sunny : Icons.nightlight_round),
             onPressed: () => themeProvider.toggleTheme(),
           ),
         ],
       ),
-      body: 
-      SingleChildScrollView(
-        
-          child: Padding(
-            padding: const EdgeInsets.all(32.0),
-            
-            child: FormBuilder(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(height:100),
-                  const Icon(
-                    Icons.account_circle,
-                    size: 80,
-                    color: Colors.blueAccent,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: FormBuilder(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 100),
+                Icon(Icons.account_circle, size: 80, color: accentColor),
+                const SizedBox(height: 16),
+                const Text(
+                  'Welcome Back',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Sign in to continue exploring movies',
+                  style: TextStyle(color: Colors.grey),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 32),
+                FormBuilderTextField(
+                  name: 'username',
+                  decoration: InputDecoration(
+                    labelText: 'Username',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    prefixIcon: Icon(Icons.person, color: accentColor),
+                    filled: true,
+                    fillColor: fieldFill,
                   ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Welcome Back',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  validator: FormBuilderValidators.required(errorText: 'Required'),
+                ),
+                const SizedBox(height: 16),
+                FormBuilderTextField(
+                  name: 'password',
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    prefixIcon: Icon(Icons.lock, color: accentColor),
+                    filled: true,
+                    fillColor: fieldFill,
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Sign in to continue exploring movies',
-                    style: TextStyle(color: Colors.grey),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 32),
-                  FormBuilderTextField(
-                    name: 'username',
-                    decoration: InputDecoration(
-                      labelText: 'Username',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      prefixIcon: const Icon(
-                        Icons.person,
-                        color: Colors.blueAccent,
-                      ),
-                      filled: true,
-                      fillColor: Theme.of(context).brightness == Brightness.dark
-                          ? Colors.grey[800]
-                          : Colors.grey[50],
-                    ),
-                    validator: FormBuilderValidators.required(
-                      errorText: 'Required',
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  FormBuilderTextField(
-                    name: 'password',
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      prefixIcon: const Icon(
-                        Icons.lock,
-                        color: Colors.blueAccent,
-                      ),
-                      filled: true,
-                      fillColor: Theme.of(context).brightness == Brightness.dark
-                          ? Colors.grey[800]
-                          : Colors.grey[50],
-                    ),
-                    validator: FormBuilderValidators.required(
-                      errorText: 'Required',
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  _isLoading
-                      ? const CircularProgressIndicator()
-                      : SizedBox(
-                          width: double.infinity,
-                          height: 50,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blueAccent,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            onPressed: _submit,
-                            child: const Text(
-                              'Login',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
+                  validator: FormBuilderValidators.required(errorText: 'Required'),
+                ),
+                const SizedBox(height: 32),
+                _isLoading
+                    ? const CircularProgressIndicator()
+                    : SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: accentColor,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
                             ),
                           ),
+                          onPressed: _submit,
+                          child: const Text(
+                            'Login',
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
                         ),
-                ],
-              ),
+                      ),
+              ],
             ),
           ),
         ),
+      ),
     );
   }
 }

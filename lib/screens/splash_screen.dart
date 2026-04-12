@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
-import 'home_screen.dart';
+import 'main_screen.dart';
 import 'login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -20,14 +20,14 @@ class _SplashScreenState extends State<SplashScreen> {
 
   void _checkAuth() async {
     final authProvider = context.read<AuthProvider>();
-    
+
     // Artificial delay for UI purposes
     await Future.delayed(const Duration(seconds: 4));
     await authProvider.checkSavedToken();
-    
+
     if (mounted) {
       if (authProvider.isAuthenticated) {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomeScreen()));
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainScreen()));
       } else {
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
       }
@@ -36,11 +36,18 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Simple check: is dark mode on?
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Pick colors based on theme
+    final Color topColor = isDark ? const Color(0xFFE50914) : Colors.deepOrange;
+    final Color bottomColor = isDark ? Colors.black : const Color(0xFF6D4C41);
+
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.blueAccent, Colors.indigo],
+            colors: [topColor, bottomColor],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),

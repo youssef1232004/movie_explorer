@@ -18,11 +18,37 @@ class MovieService {
     }
   }
 
-  Future<List<Movie>> searchMovies(String query) async {
+  Future<List<Movie>> getNowPlayingMovies({int page = 1}) async {
+    try {
+      final response = await _client.dio.get(
+        '${AppConstants.tmdbBaseUrl}/movie/now_playing',
+        queryParameters: {'api_key': AppConstants.tmdbApiKey, 'page': page},
+      );
+      List data = response.data['results'];
+      return data.map((json) => Movie.fromJson(json)).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<List<Movie>> getTopRatedMovies({int page = 1}) async {
+    try {
+      final response = await _client.dio.get(
+        '${AppConstants.tmdbBaseUrl}/movie/top_rated',
+        queryParameters: {'api_key': AppConstants.tmdbApiKey, 'page': page},
+      );
+      List data = response.data['results'];
+      return data.map((json) => Movie.fromJson(json)).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<List<Movie>> searchMovies(String query, {int page = 1}) async {
     try {
       final response = await _client.dio.get(
         '${AppConstants.tmdbBaseUrl}/search/movie',
-        queryParameters: {'api_key': AppConstants.tmdbApiKey, 'query': query},
+        queryParameters: {'api_key': AppConstants.tmdbApiKey, 'query': query, 'page': page},
       );
       List data = response.data['results'];
       return data.map((json) => Movie.fromJson(json)).toList();

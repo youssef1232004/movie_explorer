@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:movie_explorer/providers/theme_provider.dart';
 import 'package:provider/provider.dart';
 import '../providers/movie_provider.dart';
 import 'movie_details.dart';
@@ -9,61 +10,131 @@ class FavoritesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final favorites = context.watch<MovieProvider>().favoriteMovies;
+    final themeProvider = context.watch<ThemeProvider>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('My Favorites')),
+      appBar: AppBar(
+        title: const Text('My Favorites'),
+        centerTitle: false,
+        actions: [
+          IconButton(
+            icon: Icon(
+              themeProvider.isDarkMode
+                  ? Icons.wb_sunny
+                  : Icons.nightlight_round,
+            ),
+            onPressed: () => themeProvider.toggleTheme(),
+          ),
+        ],
+      ),
       body: favorites.isEmpty
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.heart_broken, size: 100, color: Colors.redAccent.withOpacity(0.5)),
+                  Icon(
+                    Icons.heart_broken,
+                    size: 100,
+                    color: Colors.redAccent.withValues(alpha: 0.5),
+                  ),
                   const SizedBox(height: 24),
-                  const Text('No favorites yet!', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.grey)),
+                  const Text(
+                    'No favorites yet!',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
+                  ),
                   const SizedBox(height: 8),
-                  const Text('Explore and add your favorite movies here', style: TextStyle(fontSize: 16, color: Colors.grey)),
+                  const Text(
+                    'Explore and add your favorite movies here',
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                  ),
                 ],
               ),
             )
-          : ListView.builder(
+          : GridView.builder(
               padding: const EdgeInsets.all(12),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 0.65,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+              ),
               itemCount: favorites.length,
               itemBuilder: (context, index) {
                 final movie = favorites[index];
-                return Card(
-                  elevation: 3,
-                  shadowColor: Colors.black26,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.all(12),
-                    leading: Hero(
-                      tag: 'movie_${movie.id}',
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.network(movie.posterPath, width: 70, height: 100, fit: BoxFit.cover,
-                          errorBuilder: (c, e, s) => Container(width: 70, height: 100, color: Colors.grey.shade300, child: const Icon(Icons.movie, size: 40)),
-                        ),
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => MovieDetailsScreen(movie: movie),
                       ),
-                    ),
-                    title: Text(movie.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                    subtitle: Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: Row(
+                    );
+                  },
+                  child: Card(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Stack(
+                        fit: StackFit.expand,
                         children: [
-                          const Icon(Icons.star, color: Colors.amber, size: 18),
-                          const SizedBox(width: 4),
-                          Text(movie.rating.toStringAsFixed(1), style: const TextStyle(fontWeight: FontWeight.w600)),
+                          Image.network(
+                            movie.posterPath,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(Icons.broken_image, size: 50),
+                          ),
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: Container(
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.black54,
+                              ),
+                              child: IconButton(
+                                icon: const Icon(
+                                  Icons.favorite,
+                                  color: Colors.redAccent,
+                                ),
+                                onPressed: () {
+                                  context.read<MovieProvider>().removeFavorite(
+                                    movie,
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            child: Container(
+                              decoration: const BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [Colors.transparent, Colors.black87],
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                ),
+                              ),
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                movie.title,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 28),
-                      onPressed: () => context.read<MovieProvider>().toggleFavorite(movie),
-                    ),
-                    onTap: () => Navigator.push(context, MaterialPageRoute(
-                      builder: (_) => MovieDetailsScreen(movie: movie)
-                    )),
                   ),
                 );
               },
