@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/movie_provider.dart';
 import 'home_screen.dart';
 import 'discover_screen.dart';
 import 'favorites_screen.dart';
@@ -12,6 +14,15 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // Refresh favorites when main screen is loaded (e.g. after login)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<MovieProvider>().loadFavorites();
+    });
+  }
 
   final List<Widget> _screens = const [
     HomeScreen(),

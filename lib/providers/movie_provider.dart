@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/movie.dart';
 import '../services/movie_service.dart';
-import '../services/local_storage.dart';
 
 class MovieProvider with ChangeNotifier {
   final MovieService _movieService = MovieService();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   
   final List<Movie> _trendingMovies = [];
   final List<Movie> _newMovies = [];
@@ -35,69 +37,139 @@ class MovieProvider with ChangeNotifier {
   List<Movie> get favoriteMovies => _favoriteMovies;
   bool get isLoading => _isLoading;
 
+  String? get _uid => FirebaseAuth.instance.currentUser?.uid;
+
   MovieProvider() {
-    _loadFavorites();
+    loadFavorites();
   }
+
+  // --- Favorites logic with Firestore ---
+
+  Future<void> loadFavorites() async {
+    final uid = _uid;
+    if (uid == null) {
+      _favoriteMovies = [];
+      notifyListeners();
+      return;
+    }
+
+    try {
+      final snapshot = await _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('favorites')
+          .get();
+
+      _favoriteMovies = snapshot.docs
+          .map((doc) => Movie.fromJson(doc.data()))
+          .toList();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error loading favorites: $e');
+    }
+  }
+
+  Future<void> toggleFavorite(Movie movie) async {
+    final uid = _uid;
+    if (uid == null) return;
+
+    final isFav = isFavorite(movie);
+    final docRef = _firestore
+        .collection('users')
+        .doc(uid)
+        .collection('favorites')
+        .doc(movie.id.toString());
+
+    try {
+      if (isFav) {
+        // Remove locally and from Firestore
+        _favoriteMovies.removeWhere((m) => m.id == movie.id);
+        await docRef.delete();
+      } else {
+        // Add locally and to Firestore
+        _favoriteMovies.add(movie);
+        await docRef.set(movie.toJson());
+      }
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error toggling favorite: $e');
+      // Potential rollback of local state if needed, but keeping it simple
+    }
+  }
+
+  Future<void> removeFavorite(Movie movie) async {
+    final uid = _uid;
+    if (uid == null) return;
+
+    try {
+      _favoriteMovies.removeWhere((m) => m.id == movie.id);
+      await _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('favorites')
+          .doc(movie.id.toString())
+          .delete();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error removing favorite: $e');
+    }
+  }
+
+  bool isFavorite(Movie movie) {
+    return _favoriteMovies.any((m) => m.id == movie.id);
+  }
+
+  // --- Movie fetching logic (unchanged core logic) ---
 
   Future<void> fetchTrending() async {
     if (_isLoading || !_hasMoreTrending) return;
-    
     _isLoading = true;
     Future.microtask(() => notifyListeners());
 
     final newItems = await _movieService.getTrendingMovies(page: _currentPage);
-    
     if (newItems.isEmpty) {
       _hasMoreTrending = false;
     } else {
       _trendingMovies.addAll(newItems);
       _currentPage++;
     }
-    
     _isLoading = false;
     notifyListeners();
   }
 
   Future<void> fetchNewMovies() async {
     if (_isLoading || !_hasMoreNew) return;
-    
     _isLoading = true;
     Future.microtask(() => notifyListeners());
 
     final newItems = await _movieService.getNowPlayingMovies(page: _newMoviesPage);
-    
     if (newItems.isEmpty) {
       _hasMoreNew = false;
     } else {
       _newMovies.addAll(newItems);
       _newMoviesPage++;
     }
-    
     _isLoading = false;
     notifyListeners();
   }
 
   Future<void> fetchTopRatedMovies() async {
     if (_isLoading || !_hasMoreTopRated) return;
-    
     _isLoading = true;
     Future.microtask(() => notifyListeners());
 
     final newItems = await _movieService.getTopRatedMovies(page: _topRatedPage);
-    
     if (newItems.isEmpty) {
       _hasMoreTopRated = false;
     } else {
       _topRatedMovies.addAll(newItems);
       _topRatedPage++;
     }
-    
     _isLoading = false;
     notifyListeners();
   }
 
   Future<void> fetchHomeData() async {
-    // Fetch initial data for all 3 lists if empty
     if (_trendingMovies.isEmpty) await fetchTrending();
     if (_newMovies.isEmpty) await fetchNewMovies();
     if (_topRatedMovies.isEmpty) await fetchTopRatedMovies();
@@ -124,26 +196,22 @@ class MovieProvider with ChangeNotifier {
     } else {
       _searchPage++;
     }
-    
     _isLoading = false;
     notifyListeners();
   }
 
   Future<void> fetchNextSearchPage() async {
     if (_isLoading || !_hasMoreSearch || _currentQuery.isEmpty) return;
-    
     _isLoading = true;
     Future.microtask(() => notifyListeners());
 
     final newItems = await _movieService.searchMovies(_currentQuery, page: _searchPage);
-    
     if (newItems.isEmpty) {
       _hasMoreSearch = false;
     } else {
       _searchResults.addAll(newItems);
       _searchPage++;
     }
-    
     _isLoading = false;
     notifyListeners();
   }
@@ -152,35 +220,5 @@ class MovieProvider with ChangeNotifier {
     _isSearching = false;
     _searchResults.clear();
     notifyListeners();
-  }
-
-  Future<void> _loadFavorites() async {
-    final favList = await LocalStorage.getFavorites();
-    _favoriteMovies = favList.map((json) => Movie.fromJson(json)).toList();
-    notifyListeners();
-  }
-
-  void toggleFavorite(Movie movie) {
-    final isFav = isFavorite(movie);
-    if (isFav) {
-      _favoriteMovies.removeWhere((m) => m.id == movie.id);
-    } else {
-      _favoriteMovies.add(movie);
-    }
-    
-    final favsJson = _favoriteMovies.map((m) => m.toJson()).toList();
-    LocalStorage.saveFavorites(favsJson);
-    notifyListeners();
-  }
-
-  void removeFavorite(Movie movie) {
-    _favoriteMovies.removeWhere((m) => m.id == movie.id);
-    final favsJson = _favoriteMovies.map((m) => m.toJson()).toList();
-    LocalStorage.saveFavorites(favsJson);
-    notifyListeners();
-  }
-
-  bool isFavorite(Movie movie) {
-    return _favoriteMovies.any((m) => m.id == movie.id);
   }
 }

@@ -1,27 +1,37 @@
 import 'package:flutter/material.dart';
-import '../core/constants.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
-import '../services/local_storage.dart';
 
 class AuthProvider with ChangeNotifier {
   final AuthService _authService = AuthService();
-  bool _isAuthenticated = false;
 
-  bool get isAuthenticated => _isAuthenticated;
+  // Getter to check if user is authenticated via Firebase
+  bool get isAuthenticated => FirebaseAuth.instance.currentUser != null;
 
-  Future<void> checkSavedToken() async {
-    String? token = await LocalStorage.getString(AppConstants.tokenKey);
-    if (token != null) {
-      _isAuthenticated = true;
+  // Stream to listen to auth changes if needed, but for simplicity we use currentUser check
+  User? get currentUser => FirebaseAuth.instance.currentUser;
+
+  Future<bool> login(String email, String password) async {
+    final result = await _authService.loginWithEmail(email, password);
+    if (result != null) {
       notifyListeners();
+      return true;
     }
+    return false;
   }
 
-  Future<bool> login(String username, String password) async {
-    final user = await _authService.login(username, password);
-    if (user != null) {
-      await LocalStorage.saveString(AppConstants.tokenKey, user.token);
-      _isAuthenticated = true;
+  Future<bool> register(String email, String password) async {
+    final result = await _authService.registerWithEmail(email, password);
+    if (result != null) {
+      notifyListeners();
+      return true;
+    }
+    return false;
+  }
+
+  Future<bool> signInWithGoogle() async {
+    final result = await _authService.signInWithGoogle();
+    if (result != null) {
       notifyListeners();
       return true;
     }
@@ -29,8 +39,14 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<void> logout() async {
-    await LocalStorage.remove(AppConstants.tokenKey);
-    _isAuthenticated = false;
+    await _authService.logout();
+    notifyListeners();
+  }
+
+  // Placeholder for initialization if needed (e.g. Firebase Auth persistent check is automatic)
+  Future<void> checkSavedToken() async {
+    // With Firebase, the SDK handles persistence.
+    // Just notify listeners to ensure UI reflects the current state.
     notifyListeners();
   }
 }

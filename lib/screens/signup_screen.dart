@@ -5,16 +5,16 @@ import 'package:movie_explorer/providers/theme_provider.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import 'main_screen.dart';
-import 'signup_screen.dart';
+import 'login_screen.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class SignupScreen extends StatefulWidget {
+  const SignupScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _SignupScreenState extends State<SignupScreen> {
   final _formKey = GlobalKey<FormBuilderState>();
   bool _isLoading = false;
 
@@ -25,7 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final data = _formKey.currentState!.value;
       final authProvider = context.read<AuthProvider>();
       
-      final success = await authProvider.login(data['email'], data['password']);
+      final success = await authProvider.register(data['email'], data['password']);
 
       setState(() => _isLoading = false);
 
@@ -36,7 +36,7 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login failed. Please check your credentials.')),
+          const SnackBar(content: Text('Registration failed. Please try again.')),
         );
       }
     }
@@ -68,7 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Login'),
+        title: const Text('Create Account'),
         centerTitle: false,
         actions: [
           IconButton(
@@ -85,16 +85,16 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const SizedBox(height: 60),
-                Icon(Icons.movie_creation_rounded, size: 80, color: accentColor),
+                const SizedBox(height: 40),
+                Icon(Icons.person_add_rounded, size: 80, color: accentColor),
                 const SizedBox(height: 16),
                 const Text(
-                  'Welcome Back',
+                  'Sign Up',
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Sign in to continue exploring movies',
+                  'Join us to track and search your favorite movies',
                   style: TextStyle(color: Colors.grey),
                   textAlign: TextAlign.center,
                 ),
@@ -126,7 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   validator: FormBuilderValidators.compose([
                     FormBuilderValidators.required(),
-                    FormBuilderValidators.minLength(6),
+                    FormBuilderValidators.minLength(6, errorText: 'Password must be at least 6 characters'),
                   ]),
                 ),
                 const SizedBox(height: 32),
@@ -146,7 +146,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ),
                               onPressed: _submit,
-                              child: const Text('Login', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                              child: const Text('Sign Up', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -160,7 +160,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 'https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg',
                                 height: 24,
                               ),
-                              label: const Text('Sign in with Google'),
+                              label: const Text('Sign Up with Google'),
                               style: OutlinedButton.styleFrom(
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
@@ -174,11 +174,11 @@ class _LoginScreenState extends State<LoginScreen> {
                             onPressed: () {
                               Navigator.pushReplacement(
                                 context,
-                                MaterialPageRoute(builder: (_) => const SignupScreen()),
+                                MaterialPageRoute(builder: (_) => const LoginScreen()),
                               );
                             },
                             child: Text(
-                              "Don't have an account? Sign Up",
+                              "Already have an account? Login",
                               style: TextStyle(color: accentColor),
                             ),
                           ),
