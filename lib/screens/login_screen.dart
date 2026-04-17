@@ -24,7 +24,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       final data = _formKey.currentState!.value;
       final authProvider = context.read<AuthProvider>();
-      
+
       final success = await authProvider.login(data['email'], data['password']);
 
       setState(() => _isLoading = false);
@@ -36,7 +36,9 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login failed. Please check your credentials.')),
+          const SnackBar(
+            content: Text('Login failed. Please check your credentials.'),
+          ),
         );
       }
     }
@@ -53,9 +55,9 @@ class _LoginScreenState extends State<LoginScreen> {
         MaterialPageRoute(builder: (_) => const MainScreen()),
       );
     } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Google Sign-In failed.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Google Sign-In failed.')));
     }
   }
 
@@ -63,7 +65,9 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final themeProvider = context.watch<ThemeProvider>();
     final isDark = themeProvider.isDarkMode;
-    final Color accentColor = isDark ? const Color(0xFFE50914) : Colors.deepOrange;
+    final Color accentColor = isDark
+        ? const Color(0xFFE50914)
+        : Colors.deepOrange;
     final Color fieldFill = isDark ? Colors.grey.shade800 : Colors.grey.shade50;
 
     return Scaffold(
@@ -86,7 +90,11 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const SizedBox(height: 60),
-                Icon(Icons.movie_creation_rounded, size: 80, color: accentColor),
+                Icon(
+                  Icons.movie_creation_rounded,
+                  size: 80,
+                  color: accentColor,
+                ),
                 const SizedBox(height: 16),
                 const Text(
                   'Welcome Back',
@@ -103,7 +111,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   name: 'email',
                   decoration: InputDecoration(
                     labelText: 'Email',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     prefixIcon: Icon(Icons.email, color: accentColor),
                     filled: true,
                     fillColor: fieldFill,
@@ -119,7 +129,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   obscureText: true,
                   decoration: InputDecoration(
                     labelText: 'Password',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     prefixIcon: Icon(Icons.lock, color: accentColor),
                     filled: true,
                     fillColor: fieldFill,
@@ -146,27 +158,46 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ),
                               onPressed: _submit,
-                              child: const Text('Login', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                              child: const Text(
+                                'Login',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
                           ),
                           const SizedBox(height: 16),
-                          const Text('OR', style: TextStyle(color: Colors.grey)),
+                          const Text(
+                            'OR',
+                            style: TextStyle(color: Colors.grey),
+                          ),
                           const SizedBox(height: 16),
                           SizedBox(
                             width: double.infinity,
                             height: 50,
-                            child: OutlinedButton.icon(
-                              icon: Image.network(
-                                'https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg',
-                                height: 24,
-                              ),
-                              label: const Text('Sign in with Google'),
+                            child: OutlinedButton(
+                              onPressed: _signInWithGoogle,
                               style: OutlinedButton.styleFrom(
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
-                              onPressed: _signInWithGoogle,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  
+                                  const Flexible(
+                                    child: Text(
+                                      'Sign in with Google',
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                           const SizedBox(height: 24),
@@ -174,7 +205,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             onPressed: () {
                               Navigator.pushReplacement(
                                 context,
-                                MaterialPageRoute(builder: (_) => const SignupScreen()),
+                                MaterialPageRoute(
+                                  builder: (_) => const SignupScreen(),
+                                ),
                               );
                             },
                             child: Text(

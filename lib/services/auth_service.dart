@@ -50,7 +50,7 @@ class AuthService {
     }
   }
 
-  // Sign in with Google (google_sign_in ^7.x API)
+  // Sign in with Google (google_sign_in ^7.x API - Simplified)
   Future<UserCredential?> signInWithGoogle() async {
     try {
       // Step 1: Initialize Google Sign-In (lazy, only on first call)
@@ -58,41 +58,23 @@ class AuthService {
 
       final signIn = GoogleSignIn.instance;
 
-      // Step 2: Listen for the authentication result via the event stream
-      final completer = Completer<GoogleSignInAccount?>();
-      StreamSubscription? subscription;
-      subscription = signIn.authenticationEvents.listen(
-        (event) {
-          if (!completer.isCompleted) {
-            switch (event) {
-              case GoogleSignInAuthenticationEventSignIn():
-                completer.complete(event.user);
-              case GoogleSignInAuthenticationEventSignOut():
-                completer.complete(null);
-            }
-          }
-          subscription?.cancel();
-        },
-        onError: (e) {
-          if (!completer.isCompleted) completer.complete(null);
-          subscription?.cancel();
-        },
-      );
+      // Step 2: Trigger the Google Sign-In UI and wait for the result
+      // In version 7.x, signIn() was replaced by authenticate().
+      // This returns the account directly or null if canceled/failed.
+      final GoogleSignInAccount? googleUser = await signIn.authenticate();
 
-      // Step 3: Trigger the Google Sign-In UI
-      await signIn.authenticate();
+      if (googleUser == null) {
+        debugPrint('Google Sign-In: Sign-in canceled or failed.');
+        return null;
+      }
 
-      // Step 4: Wait for the user from the stream
-      final googleUser = await completer.future;
-      if (googleUser == null) return null;
-
-      // Step 5: Get the idToken and create Firebase credential
+      // Step 3: Get the idToken and create Firebase credential
       final googleAuth = await googleUser.authentication;
       final credential = GoogleAuthProvider.credential(
         idToken: googleAuth.idToken,
       );
 
-      // Step 6: Sign into Firebase with the Google credential
+      // Step 4: Sign into Firebase with the Google credential
       return await _auth.signInWithCredential(credential);
     } catch (e) {
       debugPrint('Google Sign-In Error: $e');
